@@ -129,17 +129,29 @@ opts(Opts) ->
             {verify_fun, {fun verify_ssl_peer/3, proplists:get_value(crlfile, Opts, no_crl)}},
             {depth, proplists:get_value(depth, Opts, 1)},
             {versions, proplists:get_value(tls_version, Opts, ['tlsv1.2'])}
-            | []
-            %% TODO: support for flexible partial chain functions
-            % case support_partial_chain() of
-            %     true ->
-            %         [{partial_chain, fun([DerCert|_]) ->
-            %                                  {trusted_ca, DerCert}
-            %                          end}];
-            %     false ->
-            %         []
-            % end
+            | partial_chain_opts(Opts)
         ].
+
+partial_chain_opts(Opts) ->
+    case proplists:get_value(partial_chain, Opts, false) of
+        true ->
+            CaFile = proplists:get_value(cafile, Opts),
+            Pem =
+                case is_list(CaFile) andalso CaFile =/= "" andalso file:read_file(CaFile) of
+                    {ok, Bin} -> Bin;
+                    Err -> error({partial_chain_requires_readable_cafile, CaFile, Err})
+                end,
+            CaDers = [Der || {'Certificate', Der, not_encrypted} <- public_key:pem_decode(Pem)],
+            [{partial_chain, fun(Chain) -> partial_chain(Chain, CaDers) end}];
+        _ ->
+            []
+    end.
+
+partial_chain(Chain, CaDers) ->
+    case [C || C <- Chain, lists:member(C, CaDers)] of
+        [C | _] -> {trusted_ca, C};
+        [] -> unknown_ca
+    end.
 
 ciphersuite_transform(L, [], Opts) ->
     TLSV13 = lists:member('tlsv1.3', L),

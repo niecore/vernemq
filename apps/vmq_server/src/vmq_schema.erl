@@ -359,6 +359,9 @@ translate_listeners(Conf) ->
     {SSLIPs, SSLForwardClientCerts} = lists:unzip(
         extract("listener.ssl", "forward_connection_opts", BoolVal, Conf)
     ),
+    {SSLIPs, SSLPartialChain} = lists:unzip(
+        extract("listener.ssl", "partial_chain", BoolVal, Conf)
+    ),
     {SSLIPs, SSLPSKSupport} = lists:unzip(
         extract("listener.ssl", "psk_support", BoolVal, Conf)
     ),
@@ -527,6 +530,7 @@ translate_listeners(Conf) ->
             SSLVersions,
             SSLUseIdents,
             SSLForwardClientCerts,
+            SSLPartialChain,
             SSLPSKSupport,
             SSLPSKFile,
             SSLPSKFileSeparator,
@@ -664,6 +668,7 @@ extract(Prefix, Suffix, Val, Conf) ->
             "tls_version",
             "use_identity_as_username",
             "forward_connection_opts",
+            "partial_chain",
             "psk_support",
             "pskfile",
             "pskfile_separator",

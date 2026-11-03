@@ -2001,6 +2001,25 @@
                                                                                   {datatype, flag},
                                                                                   hidden
                                                                                  ]}.
+%% @doc If 'listener.ssl.partial_chain' is enabled, any certificate in the
+%% client's chain that is also contained in 'cafile' is accepted as trust
+%% anchor, even if it is not self-signed. This allows trusting only an
+%% intermediate CA (put only that intermediate into 'cafile').
+%% Requires 'cafile'. The cafile is read once at listener start, so after
+%% changing it restart the listener ('tls clear-pem-cache' is not enough).
+%% Configure on protocol level or on the listener level:
+%%
+%%     - listener.ssl.partial_chain
+%%     - listener.ssl.my_ssl_listener.partial_chain
+{mapping, "listener.ssl.partial_chain", "vmq_server.listeners", [
+                                                                  {default, off},
+                                                                  {datatype, flag},
+                                                                  {commented, off}
+                                                                 ]}.
+{mapping, "listener.ssl.$name.partial_chain", "vmq_server.listeners", [
+                                                                        {datatype, flag},
+                                                                        hidden
+                                                                       ]}.
 {mapping, "listener.ws.forward_connection_opts", "vmq_server.listeners", [
                                                                            {default, off},
                                                                            {datatype, flag},

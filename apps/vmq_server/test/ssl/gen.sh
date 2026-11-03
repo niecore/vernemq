@@ -69,6 +69,12 @@ openssl ca -batch -config openssl.cnf -name CA_signing -out client-revoked.crt -
 openssl ca -batch -config openssl.cnf -name CA_signing -revoke client-revoked.crt
 openssl ca -batch -config openssl.cnf -name CA_signing -gencrl -out crl.pem
 
+# Valid client key and certificate signed by the alternative intermediate CA.
+openssl genrsa -out client-alt.key 2048
+openssl req -new -key client-alt.key -out client-alt.csr -config openssl.cnf -subj "${SBASESUBJ}/CN=test client alt/"
+openssl x509 -req -days 3650 -in client-alt.csr -CA test-alt-ca.crt -CAkey test-alt-ca.key -passin pass:password -CAcreateserial -CAserial test-ca.srl -extfile openssl.cnf -extensions usr_cert -out client-alt.crt
+
+cat client.crt test-signing-ca.crt > client-chain.crt
 cat test-signing-ca.crt test-root-ca.crt > all-ca.crt
 mkdir certs
 #cp test-signing-ca.crt certs/test-signing-ca.pem
